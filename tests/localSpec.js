@@ -85,6 +85,30 @@ test('Should return the correct initial state for the component', t => {
     return new Promise((resolve) => setTimeout(() => resolve(), 10));
 });
 
+test('Should return the correct initial state for the component when redux store is Immutable.Map', t => {
+    const CompToRender = local({
+        key: 'myDumbComp',
+        filterGlobalActions: (action) => {
+            return false;
+        },
+        createStore: (props) => {
+            return createStore(rootReducer, { filter: true, sort: props.sortOrder })
+        },
+        mapDispatchToProps:(dispatch) => ({
+            onFilter: (filter) => dispatch({ type: 'SET_FILTER', payload: filter  }),
+            onSort: (sort) => dispatch({ type: 'SET_SORT', payload: sort }),
+        })
+    })(DummyComp);
+    const wrapper = mount(<Provider store={configureStore(true)}><CompToRender sortOrder='desc' /></Provider>);
+    const filterVal = wrapper.find('DummyComp').props().filter;
+    const sortVal = wrapper.find('DummyComp').props().sort;
+    t.deepEqual(filterVal, true);
+    t.deepEqual(sortVal, 'desc');
+    wrapper.unmount();
+    console.log('FUCKER')
+    return new Promise((resolve) => setTimeout(() => resolve(), 10));
+});
+
 test(`Should dispatch local actions that update component state. The local actions
       should also hit the global app reducers`, t => {
     const Store = configureStore();
@@ -437,7 +461,7 @@ test(`Should be able to control whether the component state is persisted or not
         t.deepEqual(Store.getState().local, {'b': {filter: true, sort: 'asc'}});
         Store.dispatch(destroyAllComponentsState());
         resolve();
-    }, 10)); 
+    }, 10));
 });
 
 test(`Should pass the component context as last argument to callback style configs`, t => {
@@ -745,8 +769,8 @@ are local HOCS nested and one of the child local unmounts as the result of a par
                 existingState || { isOpen: true }
             );
         },
-        mapDispatchToProps: (dispatch) => ({ 
-            onClose: () => dispatch({ type: 'CLOSE' }) 
+        mapDispatchToProps: (dispatch) => ({
+            onClose: () => dispatch({ type: 'CLOSE' })
         })
     });
     const SFC = (props) => (

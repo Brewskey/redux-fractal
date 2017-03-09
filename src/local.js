@@ -28,7 +28,8 @@ export default (Config) => (Component) => {
       this.unsubscribe = null;
     }
     componentWillMount() {
-      const existingState = this.context.store.getState().local[this.compKey];
+      const state = this.context.store.getState();
+      const existingState = (typeof state.get === 'function' ? state.get('local') : state.local)[this.compKey];
       const storeResult = createStore(
                 Config.createStore, this.props,
                 this.compKey, existingState, this.context);

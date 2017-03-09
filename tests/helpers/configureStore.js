@@ -1,8 +1,13 @@
 import localReducer from '../../src/localReducer.js';
 import { createStore, combineReducers } from 'redux';
-export function configureStore() {
+import { combineReducers as immutableCombineReducers } from 'redux-immutable';
+import Immutable from 'immutable';
+
+export function configureStore(asImmutable = false) {
+  const initalState = asImmutable ? Immutable.Map({}) : {};
+  const combiner    = asImmutable ? immutableCombineReducers : combineReducers;
   const store = createStore(
-            combineReducers({
+            combiner({
               local: localReducer,
               isVisible: (state = true, action) => {
                 switch (action.type) {
@@ -20,7 +25,8 @@ export function configureStore() {
                     return state;
                 }
               },
-            })
+            }),
+            initalState
         );
   return store;
 }
